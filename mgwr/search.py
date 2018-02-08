@@ -146,7 +146,7 @@ def equal_interval(l_bound, u_bound, interval, function, int_score=False):
 
 MGWR_BW_Result = namedtuple('MGWR_BW_RESULT', ['bws_','bw_trace', 'kernel_values', 'scores',
                                                'partial_predictions','model_residuals_',
-                                               'partial_residuals_', 'objective_functions'])
+                                               'partial_models_', 'objective_functions'])
 
 def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         gwr_func, bw_func, sel_func):
@@ -180,7 +180,7 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
         bws = []
         vals = []
         funcs = []
-        current_partial_residuals = []
+        models = []
         ests = np.zeros_like(X)
         f_XB = XB.copy()
         f_err = err.copy()
@@ -199,7 +199,7 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
             bws.append(copy.deepcopy(bw))
             ests[:,i] = est
             vals.append(bw_class.bw[1])
-            current_partial_residuals.append(err.copy())
+            models.append(optim_model)
 
         predy = np.sum(np.multiply(ests, X), axis=1).reshape((-1,1))
         num = np.sum((new_XB - XB)**2)/n
@@ -221,4 +221,4 @@ def multi_bw(init, y, X, n, k, family, tol, max_iter, rss_score,
 
     opt_bws = BWs[-1]
     return MGWR_BW_Result(opt_bws, np.array(BWs), np.array(VALs), 
-                          np.array(scores), f_XB, f_err, current_partial_residuals, FUNCs)
+                          np.array(scores), f_XB, f_err, models, FUNCs)

@@ -1028,6 +1028,7 @@ class MGWR(GWR):
         self.kernel = kernel
         self.fixed = fixed
         self.constant = constant
+        self.models = []
         if constant:
           self.X = USER.check_constant(self.X)
 
@@ -1063,6 +1064,7 @@ class MGWR(GWR):
             results = model.fit(ini_params, tol, max_iter, solve)
             params[:,i] = results.params.flatten()
             err = results.resid_response.reshape((-1,1))
+            self.models.append(results)
         return MGWRResults(self, params)
 
 class MGWRResults(object):
