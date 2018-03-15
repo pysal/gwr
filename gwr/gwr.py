@@ -254,27 +254,25 @@ class GWR(GLM):
         self.fit_params['solve']= solve
         if solve.lower() == 'iwls':
             m = self.W.shape[0]
+            
             #In bandwidth selection, return GWRResultsLite
             if searching:
                 resid = np.zeros((m, 1))
                 influ = np.zeros((m,1))
                 for i in range(m):
                     wi = self.W[i].reshape((-1,1))
-                    
                     if isinstance(self.family, Gaussian):
                         betas, inv_xtx_xt = _compute_betas_gwr(self.y,self.X,wi)
                         influ[i] = np.dot(self.X[i],inv_xtx_xt[:,i])
                         predy = np.dot(self.X[i],betas)[0]
                         resid[i] = self.y[i] - predy
-            
                     elif isinstance(self.family, (Poisson, Binomial)):
                         rslt = iwls(self.y, self.X, self.family, self.offset, None, ini_params, tol, max_iter, wi=wi)
                         inv_xtx_xt = rslt[5]
                         influ[i] = np.dot(self.X[i],inv_xtx_xt[:,i])*rslt[3][i][0]
                         predy = rslt[1][i]
                         resid[i] = self.y[i] - predy
-            
-                return GWRResultsLite(self.y,self.family,resid,influ)
+                return GWRResultsLite(self,resid,influ)
 
             else:
                 params = np.zeros((m, self.k))
@@ -294,7 +292,7 @@ class GWR(GLM):
                     #cf = rslt[5] - np.dot(rslt[5], f)
                     #CCT[i] = np.diag(np.dot(cf, cf.T/rslt[3]))
                     CCT[i] = np.diag(np.dot(rslt[5], rslt[5].T))
-                return GWRResults(self, model, params, predy, S, CCT, w)
+                return GWRResults(self, params, predy, S, CCT, w)
                 
                     
 
@@ -352,16 +350,56 @@ class GWR(GLM):
     def df_resid(self):
         raise NotImplementedError('Only computed for fitted model in GWRResults')
 
+
+#A lighter GWR result object for bw searching
 class GWRResultsLite(object):
-    def __init__(self, y, family, resid, influ):
-        self.y = y
-        self.family = family
-        self.n = y.shape[0]
+    """
+    Light class including minimum properties for GWR diagnostics
+    
+    Parameters
+    ----------
+    model               : GWR object
+                        pointer to GWR object with estimation parameters
+                        
+    resid_response      : array
+                        n*1, residuals of the repsonse
+                        
+    influ               : array
+                        n*1, leading diagonal of S matrix
+                        
+    Attributes
+    ----------
+    tr_S                : float
+                        trace of S (hat) matrix
+                        
+    llf                 : scalar
+                        log-likelihood of the full model; see
+                        pysal.contrib.glm.family for damily-sepcific
+                        log-likelihoods
+                        
+    mu                  : array
+                        n*, flat one dimensional array of predicted mean
+                        response value from estimator
+    """
+
+    def __init__(self, model, resid, influ):
+        self.y = model.y
+        self.family = model.family
+        self.n = model.n
         self.influ = influ
-        self.tr_S = np.sum(influ)
-        self.mu = y-resid
         self.resid_response = resid
-        self.llf = -np.log(np.sum(resid**2))*self.n/2 - (1+np.log(np.pi/self.n*2))*self.n/2
+    
+    @cache_readonly
+    def tr_S(self):
+        return np.sum(self.influ)
+    @cache_readonly
+    def llf(self):
+        return self.family.loglike(self.y,self.mu)
+    @cache_readonly
+    def mu(self):
+        return self.y - self.resid_response
+
+
 
 class GWRResults(GLMResults):
     """
