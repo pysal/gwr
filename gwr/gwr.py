@@ -354,7 +354,7 @@ class GWR(GLM):
 #A lighter GWR result object for bw searching
 class GWRResultsLite(object):
     """
-    Light class including minimum properties for GWR diagnostics
+    Light class including minimum properties for computing GWR diagnostics
     
     Parameters
     ----------
