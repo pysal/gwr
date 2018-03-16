@@ -7,7 +7,7 @@ GWR Bandwidth selection class
 __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
 import numpy as np
-from scipy.spatial.distance import cdist,pdist,squareform
+from scipy.spatial.distance import pdist,squareform
 from scipy.optimize import minimize_scalar
 from spglm.family import Gaussian, Poisson, Binomial
 from spglm.iwls import iwls,_compute_betas_gwr
@@ -122,7 +122,7 @@ class Sel_BW(object):
 
     """
     def __init__(self, coords, y, X_loc, X_glob=None, family=Gaussian(),
-            offset=None, kernel='bisquare', fixed=False, constant=True):
+            offset=None, kernel='bisquare', fixed=False, constant=True,coods_type="proj"):
         self.coords = coords
         self.y = y
         self.X_loc = X_loc
@@ -137,8 +137,8 @@ class Sel_BW(object):
             self.offset = np.ones((len(y), 1))
         else:
             self.offset = offset * 1.0
-        
         self.constant = constant
+        self.coods_type = coods_type
         self._build_dMat()
 
     def search(self, search='golden_section', criterion='AICc', bw_min=0.0,
@@ -206,10 +206,10 @@ class Sel_BW(object):
 
     def _build_dMat(self):
         if self.fixed:
-            self.dmat = cdist(self.coords,self.coords)
+            self.dmat = cdist(self.coords,self.coords,self.coods_type)
             self.sorted_dmat = None
         else:
-            self.dmat = cdist(self.coords,self.coords)
+            self.dmat = cdist(self.coords,self.coords,self.coods_type)
             self.sorted_dmat = np.sort(self.dmat)
 
 

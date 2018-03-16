@@ -75,6 +75,10 @@ class GWR(GLM):
         constant      : boolean
                         True to include intercept (default) in model and False to exclude
                         intercept.
+                        
+        coods_type    : boolean
+                        "proj" for projected coordinates (defalut)
+                        "longlat" for shperical coordinates (longlat).
 
     Attributes
     ----------
@@ -121,6 +125,10 @@ class GWR(GLM):
         constant      : boolean
                         True to include intercept (default) in model and False to exclude
                         intercept
+                        
+        coods_type    : boolean
+                        "proj" for projected coordinates (defalut)
+                        "longlat" for shperical coordinates (longlat).
 
         n             : integer
                         number of observations
@@ -187,7 +195,7 @@ class GWR(GLM):
 
     """
     def __init__(self, coords, y, X, bw, family=Gaussian(), offset=None,
-            sigma2_v1=False, kernel='bisquare', fixed=False, constant=True, dmat=None,sorted_dmat=None):
+            sigma2_v1=False, kernel='bisquare', fixed=False, constant=True, dmat=None,sorted_dmat=None,coods_type="proj"):
         """
         Initialize class
         """
@@ -210,18 +218,18 @@ class GWR(GLM):
         self.P = None
         self.dmat = dmat
         self.sorted_dmat = sorted_dmat
+        self.coods_type = coods_type
         self.W = self._build_W(fixed, kernel, coords, bw)
-
 
     def _build_W(self, fixed, kernel, coords, bw, points=None):
         if fixed:
             try:
-                W = fk[kernel](coords, bw, points, self.dmat, self.sorted_dmat)
+                W = fk[kernel](coords, bw, points, self.dmat, self.sorted_dmat,coods_type=self.coods_type)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
         else:
             try:
-                 W = ak[kernel](coords, bw, points, self.dmat, self.sorted_dmat)
+                 W = ak[kernel](coords, bw, points, self.dmat, self.sorted_dmat,coods_type=self.coods_type)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
 
