@@ -8,36 +8,37 @@ import scipy
 import numpy as np
 from scipy.spatial.kdtree import KDTree
 from scipy.spatial.distance import cdist as cdist_scipy
+from math import radians, sin, cos, sqrt, asin
 
 #adaptive specifications should be parameterized with nn-1 to match original gwr
 #implementation. That is, pysal counts self neighbors with knn automatically.
 
-def fix_gauss(coords, bw, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
+def fix_gauss(coords, bw, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
     w = _Kernel(coords, function='gwr_gaussian', bandwidth=bw,
-            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
-def adapt_gauss(coords, nn, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
+def adapt_gauss(coords, nn, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
     w = _Kernel(coords, fixed=False, k=nn-1, function='gwr_gaussian',
-            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
-def fix_bisquare(coords, bw, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
-    w = _Kernel(coords, function='bisquare', bandwidth=bw, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+def fix_bisquare(coords, bw, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
+    w = _Kernel(coords, function='bisquare', bandwidth=bw, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
-def adapt_bisquare(coords, nn, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
-    w = _Kernel(coords, fixed=False, k=nn-1, function='bisquare', points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+def adapt_bisquare(coords, nn, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
+    w = _Kernel(coords, fixed=False, k=nn-1, function='bisquare', points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
-def fix_exp(coords, bw, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
+def fix_exp(coords, bw, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
     w = _Kernel(coords, function='exponential', bandwidth=bw,
-            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
-def adapt_exp(coords, nn, points=None, dmat=None,sorted_dmat=None,coods_type="proj"):
+def adapt_exp(coords, nn, points=None, dmat=None,sorted_dmat=None,coords_type="proj"):
     w = _Kernel(coords, fixed=False, k=nn-1, function='exponential',
-            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coods_type=coods_type)
+            truncate=False, points=points, dmat=dmat,sorted_dmat=sorted_dmat,coords_type=coords_type)
     return w.kernel
 
 #Customized Kernel class user for GWR because the default PySAL kernel class
@@ -45,7 +46,7 @@ def adapt_exp(coords, nn, points=None, dmat=None,sorted_dmat=None,coods_type="pr
 #speed optimization since it is not always assume points far awar are truncated
 #to zero
 
-def cdist(coords1,coords2,coods_type):
+def cdist(coords1,coords2,coords_type):
     def _haversine(lon1, lat1, lon2, lat2):
         R = 6371.0 # Earth radius in kilometers
         dLat = radians(lat2 - lat1)
@@ -58,10 +59,10 @@ def cdist(coords1,coords2,coods_type):
     n = len(coords1)
     m = len(coords2)
     dmat = np.zeros((n,n))
-    if coods_type == "proj":
+    if coords_type == "proj":
         dmat = cdist_scipy(coords1,coords2)
     
-    if coods_type == "longlat":
+    if coords_type == "longlat":
         for i in range(n) :
             for j in range(m):
                 dmat[i,j] = _haversine(coords1[i][0], coords1[i][1], coords2[j][0], coords2[j][1])
@@ -73,7 +74,7 @@ class _Kernel(object):
     """
     def __init__(self, data, bandwidth=None, fixed=True, k=None,
                  function='triangular', eps=1.0000001, ids=None, truncate=True,
-                 points=None, dmat=None,sorted_dmat=None, coods_type="proj"): #Added truncate flag
+                 points=None, dmat=None,sorted_dmat=None, coords_type="proj"): #Added truncate flag
         
 
         if issubclass(type(data), scipy.spatial.KDTree):
@@ -86,7 +87,7 @@ class _Kernel(object):
         else:
             self.k = k
         
-        self.coods_type = coods_type
+        self.coords_type = coords_type
         self.searching = True
         
         if dmat is None:
@@ -97,10 +98,10 @@ class _Kernel(object):
             self.sorted_dmat = sorted_dmat
         else:
             if points is None:
-                self.dmat = cdist(self.data, self.data, self.coods_type)
+                self.dmat = cdist(self.data, self.data, self.coords_type)
             else:
                 self.points = points
-                self.dmat = cdist(self.points, self.data, self.coods_type)
+                self.dmat = cdist(self.points, self.data, self.coords_type)
 
         self.function = function.lower()
         self.fixed = fixed
