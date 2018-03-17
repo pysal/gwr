@@ -167,7 +167,7 @@ class Sel_BW(object):
         bw             : scalar or array
                          optimal bandwidth value
         """
-        self.search_params['search_method'] = search
+        self.search_params['search'] = search
         self.search_params['criterion'] = criterion
         self.search_params['bw_min'] = bw_min
         self.search_params['bw_max'] = bw_max
@@ -225,7 +225,7 @@ class Sel_BW(object):
     def _bw(self):
 
         gwr_func = lambda bw: getDiag[self.criterion](GWR(self.coords, self.y, self.X_loc, bw, family=self.family, kernel=self.kernel, fixed=self.fixed, constant=self.constant,dmat=self.dmat,sorted_dmat=self.sorted_dmat).fit())
-
+        
         self._optimized_function = gwr_func
 
         if self.search_method == 'golden_section':
