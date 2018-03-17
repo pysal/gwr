@@ -140,6 +140,7 @@ class Sel_BW(object):
         
         self.constant = constant
         self._build_dMat()
+        self.search_params = {}
 
     def search(self, search='golden_section', criterion='AICc', bw_min=0.0,
             bw_max=0.0, interval=0.0, tol=1.0e-6, max_iter=200):
@@ -166,6 +167,14 @@ class Sel_BW(object):
         bw             : scalar or array
                          optimal bandwidth value
         """
+        self.search_params['search_method'] = search
+        self.search_params['criterion'] = criterion
+        self.search_params['bw_min'] = bw_min
+        self.search_params['bw_max'] = bw_max
+        self.search_params['interval'] = interval
+        self.search_params['tol'] = tol
+        self.search_params['max_iter'] = max_iter
+
         self.search_method = search
         self.criterion = criterion
         self.bw_min = bw_min
