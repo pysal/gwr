@@ -951,6 +951,37 @@ class GWRResults(GLMResults):
    
     def spatial_variability(self, selector, n_iters=1000, seed=None):
         """
+        Method to compute a Monte Carlo test of spatial variability for each
+        estimated coefficient surface.
+
+        WARNING: This test is very computationally demanding!
+
+        Parameters
+        ----------
+        selector        : sel_bw object
+                          should be the sel_bw object used to select a bandwidth
+                          for the gwr model that produced the surfaces that are
+                          being tested for spatial variation
+        
+        n_iters         : int
+                          the number of Monte Carlo iterations to include for
+                          the tests of spatial variability.
+
+       seed             : int
+                          optional parameter to select a custom seed to ensure
+                          stochastic results are replicable. Default is none
+                          which automatically sets the seed to 5536
+
+       Returns
+       -------
+
+       p values         : list
+                          a list of psuedo p-values that correspond to the model
+                          parameter surfaces. Allows us to assess the
+                          probability of obtaining the observed spatial
+                          variation of a given surface by random chance. 
+
+
         """
         temp_sel = copy.deepcopy(selector)
         temp_gwr = copy.deepcopy(self.model)
