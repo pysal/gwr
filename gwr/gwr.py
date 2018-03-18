@@ -76,9 +76,10 @@ class GWR(GLM):
                         True to include intercept (default) in model and False to exclude
                         intercept.
                         
-        coords_type    : boolean
-                        "proj" for projected coordinates (defalut)
-                        "longlat" for shperical coordinates (longlat).
+        spherical     : boolean
+                        True for shperical coordinates (long-lat),
+                        False for projected coordinates (defalut).
+                        
 
     Attributes
     ----------
@@ -126,9 +127,9 @@ class GWR(GLM):
                         True to include intercept (default) in model and False to exclude
                         intercept
                         
-        coords_type    : boolean
-                        "proj" for projected coordinates (defalut)
-                        "longlat" for shperical coordinates (longlat).
+        spherical     : boolean
+                        True for shperical coordinates (long-lat),
+                        False for projected coordinates (defalut).
 
         n             : integer
                         number of observations
@@ -195,7 +196,7 @@ class GWR(GLM):
 
     """
     def __init__(self, coords, y, X, bw, family=Gaussian(), offset=None,
-            sigma2_v1=False, kernel='bisquare', fixed=False, constant=True, dmat=None,sorted_dmat=None,coords_type="proj"):
+            sigma2_v1=False, kernel='bisquare', fixed=False, constant=True, dmat=None,sorted_dmat=None,spherical=False):
         """
         Initialize class
         """
@@ -218,18 +219,18 @@ class GWR(GLM):
         self.P = None
         self.dmat = dmat
         self.sorted_dmat = sorted_dmat
-        self.coords_type = coords_type
+        self.spherical = spherical
         self.W = self._build_W(fixed, kernel, coords, bw)
 
     def _build_W(self, fixed, kernel, coords, bw, points=None):
         if fixed:
             try:
-                W = fk[kernel](coords, bw, points, self.dmat, self.sorted_dmat,coords_type=self.coords_type)
+                W = fk[kernel](coords, bw, points, self.dmat, self.sorted_dmat,spherical=self.spherical)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
         else:
             try:
-                 W = ak[kernel](coords, bw, points, self.dmat, self.sorted_dmat,coords_type=self.coords_type)
+                 W = ak[kernel](coords, bw, points, self.dmat, self.sorted_dmat,spherical=self.spherical)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
 

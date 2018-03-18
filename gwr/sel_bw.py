@@ -122,7 +122,7 @@ class Sel_BW(object):
 
     """
     def __init__(self, coords, y, X_loc, X_glob=None, family=Gaussian(),
-            offset=None, kernel='bisquare', fixed=False, constant=True,coords_type="proj"):
+            offset=None, kernel='bisquare', fixed=False, constant=True,spherical=False):
         self.coords = coords
         self.y = y
         self.X_loc = X_loc
@@ -138,7 +138,7 @@ class Sel_BW(object):
         else:
             self.offset = offset * 1.0
         self.constant = constant
-        self.coords_type = coords_type
+        self.spherical = spherical
         self._build_dMat()
 
     def search(self, search='golden_section', criterion='AICc', bw_min=0.0,
@@ -206,10 +206,10 @@ class Sel_BW(object):
 
     def _build_dMat(self):
         if self.fixed:
-            self.dmat = cdist(self.coords,self.coords,self.coords_type)
+            self.dmat = cdist(self.coords,self.coords,self.spherical)
             self.sorted_dmat = None
         else:
-            self.dmat = cdist(self.coords,self.coords,self.coords_type)
+            self.dmat = cdist(self.coords,self.coords,self.spherical)
             self.sorted_dmat = np.sort(self.dmat)
 
 

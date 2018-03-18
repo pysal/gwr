@@ -349,7 +349,7 @@ class TestGWRGaussian(unittest.TestCase):
         inf = np.array(self.BS_NN_longlat.by_col(' influence')).reshape((-1,1))
         cooksD = np.array(self.BS_NN_longlat.by_col(' CooksD')).reshape((-1,1))
         
-        model = GWR(coords_longlat, self.y, self.X, bw=90.000, fixed=False,coords_type="longlat")
+        model = GWR(coords_longlat, self.y, self.X, bw=90.000, fixed=False,spherical=True)
         rslt = model.fit()
         
         AICc = get_AICc(rslt)
