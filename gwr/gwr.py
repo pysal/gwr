@@ -80,7 +80,6 @@ class GWR(GLM):
                         True for shperical coordinates (long-lat),
                         False for projected coordinates (defalut).
                         
-
     Attributes
     ----------
         coords        : array-like
@@ -126,7 +125,7 @@ class GWR(GLM):
         constant      : boolean
                         True to include intercept (default) in model and False to exclude
                         intercept
-                        
+
         spherical     : boolean
                         True for shperical coordinates (long-lat),
                         False for projected coordinates (defalut).
