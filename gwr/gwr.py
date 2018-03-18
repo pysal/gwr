@@ -76,7 +76,7 @@ class GWR(GLM):
                         True to include intercept (default) in model and False to exclude
                         intercept.
                         
-        coords_type    : boolean
+        coords_type   : string
                         "proj" for projected coordinates (defalut)
                         "longlat" for shperical coordinates (longlat).
 
@@ -126,7 +126,7 @@ class GWR(GLM):
                         True to include intercept (default) in model and False to exclude
                         intercept
                         
-        coords_type    : boolean
+        coords_type   : string
                         "proj" for projected coordinates (defalut)
                         "longlat" for shperical coordinates (longlat).
 
