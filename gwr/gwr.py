@@ -5,6 +5,7 @@ Main GWR classes
 
 __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
+import copy
 import numpy as np
 import numpy.linalg as la
 from scipy.stats import t
@@ -1028,7 +1029,78 @@ class GWRResults(GLMResults):
         VDP = vdp_pi[:,nvar-1,:]
         
         return corr_mat, vifs_mat, local_CN, VDP
+   
+    def spatial_variability(self, selector, n_iters=1000, seed=None):
+        """
+        Method to compute a Monte Carlo test of spatial variability for each
+        estimated coefficient surface.
+
+        WARNING: This test is very computationally demanding!
+
+        Parameters
+        ----------
+        selector        : sel_bw object
+                          should be the sel_bw object used to select a bandwidth
+                          for the gwr model that produced the surfaces that are
+                          being tested for spatial variation
+        
+        n_iters         : int
+                          the number of Monte Carlo iterations to include for
+                          the tests of spatial variability.
+
+       seed             : int
+                          optional parameter to select a custom seed to ensure
+                          stochastic results are replicable. Default is none
+                          which automatically sets the seed to 5536
+
+       Returns
+       -------
+
+       p values         : list
+                          a list of psuedo p-values that correspond to the model
+                          parameter surfaces. Allows us to assess the
+                          probability of obtaining the observed spatial
+                          variation of a given surface by random chance. 
+
+
+        """
+        temp_sel = copy.deepcopy(selector)
+        temp_gwr = copy.deepcopy(self.model)
+
+        if seed is None:
+        	np.random.seed(5536)
+        else:
+            np.random.seed(seed)
+
+        fit_params = temp_gwr.fit_params
+        search_params = temp_sel.search_params
+        kernel = temp_gwr.kernel
+        fixed = temp_gwr.fixed
+
+
+        if self.model.constant:
+            X = self.X[:,1:]
+        else:
+            X = self.X
+
+        init_sd =  np.std(self.params, axis=0)
+        SDs = []
     
+        for x in range(n_iters):
+            temp_coords = np.random.permutation(self.model.coords)
+            temp_sel.coords = temp_coords
+            temp_sel._build_dMat()
+            temp_bw = temp_sel.search(**search_params)
+   
+            temp_gwr.W = temp_gwr._build_W(fixed, kernel, temp_coords, temp_bw)
+            temp_params = temp_gwr.fit(**fit_params).params
+    
+            temp_sd = np.std(temp_params, axis=0)
+            SDs.append(temp_sd)
+        
+        p_vals = (np.sum(np.array(SDs) > init_sd, axis=0) / float(n_iters))
+        return p_vals
+
     @cache_readonly
     def predictions(self):
         P = self.model.P
