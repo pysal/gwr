@@ -105,6 +105,7 @@ class TestGWRGaussian(unittest.TestCase):
         cn1 = np.array(pysal.open(local_cn))
         local_vdp = os.path.join(os.path.dirname(__file__),'local_vdp.csv')
         vdp1 = np.array(pysal.open(local_vdp), dtype=np.float64)
+        spat_var_p_vals = [0. , 0. , 0.5, 0.2 ]
 
         model = GWR(self.coords, self.y, self.X, bw=90.000, fixed=False)
         rslt = model.fit()
@@ -127,6 +128,7 @@ class TestGWRGaussian(unittest.TestCase):
         np.testing.assert_allclose(vif1, vif2, rtol=1e-04)
         np.testing.assert_allclose(cn1, cn2, rtol=1e-04)
         np.testing.assert_allclose(vdp1, vdp2, rtol=1e-04)
+
         np.testing.assert_allclose(est_Int, rslt.params[:,0], rtol=1e-04)
         np.testing.assert_allclose(se_Int, rslt.bse[:,0], rtol=1e-04)
         np.testing.assert_allclose(t_Int, rslt.tvalues[:,0], rtol=1e-04)
@@ -145,6 +147,16 @@ class TestGWRGaussian(unittest.TestCase):
         np.testing.assert_allclose(localR2, rslt.localR2, rtol=1e-05)
         np.testing.assert_allclose(inf, rslt.influ, rtol=1e-04)
         np.testing.assert_allclose(cooksD, rslt.cooksD, rtol=1e-00)
+
+        sel = Sel_BW(self.coords, self.y, self.X)
+        bw = sel.search()
+        model = GWR(self.coords, self.y, self.X, bw)
+        result = model.fit()
+
+        p_vals = result.spatial_variability(sel, 10)
+
+        np.testing.assert_allclose(spat_var_p_vals, p_vals, rtol=1e-04)
+
 
     def test_GS_F(self):
         est_Int = self.GS_F.by_col(' est_Intercept')
