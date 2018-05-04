@@ -6,7 +6,7 @@ except ImportError:
     from distutils.command.build_py import build_py
 
 setup(name='gwr', #name of package
-      version='1.0.0',
+      version='1.0.1',
       description='geographically weighted regression', #short <80chr description
       url='https://github.com/TaylorOshan/gwr', #github repo
       maintainer='Taylor M. Oshan', 
