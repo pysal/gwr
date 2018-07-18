@@ -1,3 +1,5 @@
+# <font color='red'>NOTE: All development has moved to [pysal/mgwr](https://github.com/pysal/mgwr)</font>
+<s>
 **G**eographically **W**eighted **R**egression
 =======================================
 
